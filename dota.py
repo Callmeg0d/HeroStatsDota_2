@@ -12,31 +12,11 @@ try:
 except requests.exceptions.RequestException:
     print(f"Сетевая ошибка:")
 
-
-def get_heroes():
-    url = "https://api.opendota.com/api/heroes"
-    try:
-        response = requests.get(url)
-        if response.status_code == HTTPStatus.OK:
-            heroes_data = response.json()
-            hero_name_and_id = []
-            for hero in heroes_data:
-                hero_name_and_id.append((
-                    hero["localized_name"],
-                    hero["id"]
-                ))
-        else:
-            return []
-    except requests.exceptions.RequestException:
-        print(f"Сетевая ошибка:")
-        return None
-
-def name(s):
-    k = s["hero_id"]
+def name_by_id(some_info_about_hero):
+    hero_id = some_info_about_hero["hero_id"]
     for i in range(len(heroes_data)):
-        if heroes_data[i]["id"] == k:
+        if heroes_data[i]["id"] == hero_id:
             return(heroes_data[i]["localized_name"])
-
 
 def get_hero_versus(hero_id, hero_data):
     url = f"https://api.opendota.com/api/heroes/{hero_id}/matchups"
@@ -55,14 +35,14 @@ def get_hero_versus(hero_id, hero_data):
         sorted_versus_heroes = sorted(versus_heroes, key=lambda x: x["win_rate"], reverse=True)
         print("Герой наиболее силён против:")
         print(sorted_versus_heroes[0])
-        print(name(sorted_versus_heroes[0]))
+        print(name_by_id(sorted_versus_heroes[0]))
         print(sorted_versus_heroes[1])
-        print(name(sorted_versus_heroes[1]))
+        print(name_by_id(sorted_versus_heroes[1]))
         print("Герой наиболее слаб против:")
         print(sorted_versus_heroes[-1])
-        print(name(sorted_versus_heroes[-1]))
+        print(name_by_id(sorted_versus_heroes[-1]))
         print(sorted_versus_heroes[-2])
-        print(name(sorted_versus_heroes[-2]))
+        print(name_by_id(sorted_versus_heroes[-2]))
         print()
     except requests.exceptions.RequestException:
         print(f"Сетевая ошибка:")
@@ -74,7 +54,7 @@ def hero_by_name(hero_name, hero_data):
             return hero
     return None
 
-def print_hero_info(hero, versus_heroes):
+def print_hero_info(hero):
     if hero:
         print(f"Информация о герое {hero['localized_name']}:")
         print(f"Полномочия героя: {hero['roles']}")
@@ -90,10 +70,8 @@ def main():
             break
         hero = hero_by_name(hero_name, heroes_data)
         if hero:
-            get_heroes()
             versus_heroes = get_hero_versus(hero['id'], heroes_data)
-            print_hero_info(hero, versus_heroes)
-
+            print_hero_info(hero)
         else:
             print("Герой не найден.")
 
