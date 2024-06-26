@@ -8,7 +8,7 @@ from storage import HeroesStorage
 OPENDOTA_API = "https://api.opendota.com"
 
 heroes_storage = HeroesStorage.get()
-print(heroes_storage)
+
 def storage():
     url = f"{OPENDOTA_API}/api/heroes"
     try:
