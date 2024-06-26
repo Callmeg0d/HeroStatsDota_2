@@ -1,6 +1,8 @@
 import requests
 import json
 from http import HTTPStatus
+from schemes import HeroData
+from schemes import HeroMatchup
 
 OPENDOTA_API = "https://api.opendota.com"
 
