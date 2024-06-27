@@ -3,14 +3,12 @@ import json
 from http import HTTPStatus
 from schemes import HeroData
 from schemes import HeroMatchup
-from storage import HeroesStorage
+from storage import heroes_storage
 
 OPENDOTA_API = "https://api.opendota.com"
 
-heroes_storage = HeroesStorage()
-heroes_data = heroes_storage.get()
 
-def get_storage():
+def get_heroes_data():
     url = f"{OPENDOTA_API}/api/heroes"
     try:
         validated_data = [HeroData(**hero) for hero in heroes_data]
@@ -20,9 +18,10 @@ def get_storage():
 
 def get_name_by_id(some_info_about_hero):
     hero_id = some_info_about_hero["hero_id"]
+    heroes_data = heroes_storage.get()
     for i in range(len(heroes_data)):
-        if heroes_data[i]["id"] == hero_id:
-            return(heroes_data[i]["localized_name"])
+        if heroes_data[i].id == hero_id:
+            return heroes_data[i].localized_name
 
 def get_hero_versus(hero_id, hero_data):
     url = f"{OPENDOTA_API}/api/heroes/{hero_id}/matchups"
@@ -31,11 +30,13 @@ def get_hero_versus(hero_id, hero_data):
     except requests.exceptions.RequestException as e:
         print(f"Сетевая ошибка: {e}")
         return []
+        
     try:
         hero_versus_data = response.json()
     except ValueError as e:
         print(f"Ошибка при обработке JSON: {e}")
         return []
+        
     versus_heroes = []
     for hero in hero_versus_data:
         matchup_info = HeroMatchup(
@@ -57,31 +58,34 @@ def get_hero_versus(hero_id, hero_data):
 
 def get_hero_by_name(hero_name, hero_data):
     for hero in hero_data:
-        if hero["localized_name"].lower() == hero_name.lower():
+        if hero.localized_name.lower() == hero_name.lower():
             return hero
     return None
 
 def print_hero_info(hero):
-    if hero:
-        hero_info = f"""
-        Информация о герое {hero['localized_name']}:
-        Полномочия героя: {hero['roles']}
-        Основной аттрибут: {hero['primary_attr']}
-        Тип атаки: {hero['attack_type']}
-        """
-        print(hero_info)
+    if not hero:
+        return
+    hero_info = f"""
+    Информация о герое {hero.localized_name}:
+    Полномочия героя: {hero.roles}
+    Основной аттрибут: {hero.primary_attr}
+    Тип атаки: {hero.attack_type}
+    """
+    print(hero_info)
 
 def main():
-    heroes_data = get_storage()
+    # init heroes data
+    heroes_storage.set(get_heroes_data())
+    
     print("Программа выдаёт 2 лучших и худших героев против введённого, их статистику матчей, а также некоторые характеристики введённого героя.")
     while True:
         hero_name = input("Введите имя героя, чтобы узнать его статистику и характеристики (для выхода введите 'exit'): ")
         if hero_name.lower() == "exit":
             break
-        hero = get_hero_by_name(hero_name, heroes_data)
+        hero = get_hero_by_name(hero_name, heroes_storage.get())
         if hero:
             print_hero_info(hero)
-            versus_heroes = get_hero_versus(hero['id'], heroes_data)
+            versus_heroes = get_hero_versus(hero.id, heroes_storage.get())
         else:
             print("Герой не найден.")
 
