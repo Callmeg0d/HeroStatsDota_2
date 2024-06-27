@@ -22,7 +22,7 @@ def get_name_by_id(some_info_about_hero):
     hero_id = some_info_about_hero["hero_id"]
     for i in range(len(heroes_data)):
         if heroes_data[i]["id"] == hero_id:
-            return(heroes_data[i]["localized_name"])
+            return heroes_data[i]["localized_name"]
 
 def get_hero_versus(hero_id, hero_data):
     url = f"{OPENDOTA_API}/api/heroes/{hero_id}/matchups"
@@ -62,14 +62,15 @@ def get_hero_by_name(hero_name, hero_data):
     return None
 
 def print_hero_info(hero):
-    if hero:
-        hero_info = f"""
+    if not hero:
+        return
+    hero_info = f"""
         Информация о герое {hero['localized_name']}:
         Полномочия героя: {hero['roles']}
         Основной аттрибут: {hero['primary_attr']}
         Тип атаки: {hero['attack_type']}
         """
-        print(hero_info)
+    print(hero_info)
 
 def main():
     heroes_data = get_storage()
