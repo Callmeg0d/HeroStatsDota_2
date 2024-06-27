@@ -7,21 +7,22 @@ from storage import HeroesStorage
 
 OPENDOTA_API = "https://api.opendota.com"
 
-heroes_storage = HeroesStorage.get()
+heroes_storage = HeroesStorage()
+heroes_data = heroes_storage.get()
 
-def storage():
+def get_storage():
     url = f"{OPENDOTA_API}/api/heroes"
     try:
-        validated_data = [HeroData(**hero) for hero in heroes_storage]
+        validated_data = [HeroData(**hero) for hero in heroes_data]
     except ValueError as e:
         print(f"Ошибка при обработке JSON: {e}")
-    return heroes_storage
+    return heroes_data
 
-def name_by_id(some_info_about_hero):
+def get_name_by_id(some_info_about_hero):
     hero_id = some_info_about_hero["hero_id"]
-    for i in range(len(heroes_storage)):
-        if heroes_storage[i]["id"] == hero_id:
-            return(heroes_storage[i]["localized_name"])
+    for i in range(len(heroes_data)):
+        if heroes_data[i]["id"] == hero_id:
+            return(heroes_data[i]["localized_name"])
 
 def get_hero_versus(hero_id, hero_data):
     url = f"{OPENDOTA_API}/api/heroes/{hero_id}/matchups"
@@ -48,13 +49,13 @@ def get_hero_versus(hero_id, hero_data):
     sorted_versus_heroes = sorted(versus_heroes, key=lambda x: x["win_rate"], reverse=True)
     print("Герой наиболее силён против:")
     for i in range(2):
-        print(sorted_versus_heroes[i], (name_by_id(sorted_versus_heroes[i])))
+        print(sorted_versus_heroes[i], (get_name_by_id(sorted_versus_heroes[i])))
     print("Герой наиболее слаб против:")
     for i in range(2):
-        print(sorted_versus_heroes[len(sorted_versus_heroes) - i - 1], (name_by_id(sorted_versus_heroes[len(sorted_versus_heroes) - i - 1])))
+        print(sorted_versus_heroes[len(sorted_versus_heroes) - i - 1], (get_name_by_id(sorted_versus_heroes[len(sorted_versus_heroes) - i - 1])))
     print()
 
-def hero_by_name(hero_name, hero_data):
+def get_hero_by_name(hero_name, hero_data):
     for hero in hero_data:
         if hero["localized_name"].lower() == hero_name.lower():
             return hero
@@ -71,13 +72,13 @@ def print_hero_info(hero):
         print(hero_info)
 
 def main():
-    heroes_data = storage()
+    heroes_data = get_storage()
     print("Программа выдаёт 2 лучших и худших героев против введённого, их статистику матчей, а также некоторые характеристики введённого героя.")
     while True:
         hero_name = input("Введите имя героя, чтобы узнать его статистику и характеристики (для выхода введите 'exit'): ")
         if hero_name.lower() == "exit":
             break
-        hero = hero_by_name(hero_name, heroes_data)
+        hero = get_hero_by_name(hero_name, heroes_data)
         if hero:
             print_hero_info(hero)
             versus_heroes = get_hero_versus(hero['id'], heroes_data)
